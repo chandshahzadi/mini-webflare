@@ -1,5 +1,5 @@
 use axum::{routing::{get, post, put, delete}, Router};
-use mini_webflare::handlers::cart_handlers::{
+use crate::handlers::cart_handlers::{
     get_cart, add_to_cart, delete_from_cart, update_cart
 };
 use sqlx::PgPool;

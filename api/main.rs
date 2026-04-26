@@ -1,4 +1,5 @@
 mod routes;
+mod handlers;
 use axum::Router;
 use crate::routes::user_routes::user_routes;
 use mini_webflare::migrations::db::connect_db;

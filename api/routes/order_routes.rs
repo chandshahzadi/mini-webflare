@@ -1,5 +1,5 @@
 use axum::{routing::{get, post, delete}, Router};
-pub use mini_webflare::handlers::order_handler::{create_order, get_orders, update_order, delete_order};
+pub use crate::handlers::order_handler::{create_order, get_orders, update_order, delete_order};
 use sqlx::PgPool;
 
 pub fn order_routes() -> Router<PgPool> {

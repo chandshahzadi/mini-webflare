@@ -4,7 +4,7 @@ use axum::{
     middleware,
 };
 use sqlx::{PgPool}; 
-use mini_webflare::handlers::user_handler::{get_users, create_user, get_user, delete_user, update_user};
+use crate::handlers::user_handler::{get_users, create_user, get_user, delete_user, update_user};
 pub use mini_webflare::auth::middleware::{auth_middleware};
 
 pub fn user_routes() -> Router<PgPool> {

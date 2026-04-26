@@ -57,8 +57,7 @@ pub async fn update_cart(
 
 // delete /cart
 pub async fn delete_from_cart(
-    pool: &PgPool, 
-    id: i32
+    pool: &PgPool, id: i32,
 ) -> Result<(), String> {
     let result = CartRepo::delete_from_cart(pool, id).await;
 

@@ -1,5 +1,5 @@
 use axum::{Router, routing::post};
-use mini_webflare::handlers::auth_handler::{signup, login};
+use crate::handlers::auth_handler::{signup, login};
 use sqlx::PgPool;
 
 // aunthentication routing
