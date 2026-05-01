@@ -1,0 +1,15 @@
+[package]
+name = "authentication"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+models = { path = "../models" }
+utils = { path = "../utils" }
+serde = { version = "1", features = ["derive"] }
+jsonwebtoken = "9"
+chrono = { version = "0.4", features = ["serde"] }
+axum = { version = "0.6", features = ["macros"] }
+sqlx = { version = "0.7", features = ["postgres", "runtime-tokio", "macros", "chrono"] }
+bcrypt = "0.15"
