@@ -2,3 +2,4 @@ pub mod db;
 pub mod jwt;
 pub mod middleware;
 pub mod encryption;
+pub mod error;

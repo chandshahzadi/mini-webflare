@@ -1,5 +1,4 @@
 
-use axum::extract::Path;
 use serde::{Serialize, Deserialize};
 use sqlx::{PgPool, Result};
 use sqlx::FromRow;
@@ -19,7 +18,7 @@ pub struct CreateCart {
     pub quantity: i32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize)]   
 pub struct UpdateCart {
     pub quantity: i32,
 }
@@ -29,7 +28,7 @@ pub struct CartRepo;
 impl CartRepo {
 
     // create/cart
-    pub async fn create_cart(
+    pub async fn insert_to_cart(
         pool: &PgPool, 
         new_cart: CreateCart,
     ) -> Result<Cart> {
@@ -54,7 +53,7 @@ impl CartRepo {
     // get/cart
     pub async fn get_cart(
         pool: &PgPool, 
-        Path(user_id): Path<i32>,
+        user_id: i32,
     ) -> Result<Vec<Cart>> {
         let carts = sqlx::query_as!(
             Cart,

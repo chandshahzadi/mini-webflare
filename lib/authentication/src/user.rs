@@ -3,7 +3,7 @@ use axum::{
 };
 use axum::debug_handler;
 use sqlx::PgPool;
-use models::user_repo::{User, CreateUser};
+use models::user::{User, CreateUser};
 use utils::encryption::hash_password;
 use utils::db::DB;
 
@@ -84,17 +84,17 @@ pub async fn get_user(
 pub async fn update_user(
     Path(id): Path<i32>,
     State(db): State<DB>,
-    Json(payload): Json<CreateUser>,   
+    Json(payload): Json<CreateUser>,
 ) -> Result<(), StatusCode> {
-    let result = sqlx::query!(
-        "
-            UPDATE users 
-            SET first_name = $1, 
+    sqlx::query!(
+        r#"
+        UPDATE users 
+        SET first_name = $1, 
             last_name = $2, 
             email = $3, 
             password = $4
-            WHERE id = $5
-        ",
+        WHERE id = $5
+        "#,
         payload.first_name,
         payload.last_name,
         payload.email,
@@ -103,7 +103,7 @@ pub async fn update_user(
     )
     .execute(&db)
     .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR);
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     Ok(())
 }
 

@@ -14,6 +14,7 @@ pub struct Order {
 pub struct CreateOrder {
     pub user_id: i32,
     pub total_price: f64,
+    pub quantity: UpdateOrder,
 }
 
 #[derive(Debug, Deserialize)]

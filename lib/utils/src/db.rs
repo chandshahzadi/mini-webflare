@@ -1,6 +1,7 @@
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use std::env;
 use dotenvy::dotenv;
+use crate::error::AppError;
 
 pub type DB = PgPool;
 

@@ -2,7 +2,6 @@
 members = [
     "lib/authentication",
     "lib/models",
-    "lib/services",
     "lib/utils",
     "api"
 ]
