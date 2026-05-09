@@ -15,9 +15,8 @@ pub struct UpdateProduct {
     pub name: String,
     pub price: f64,
 }
-pub struct ProductRepo;
 
-impl ProductRepo {
+impl Product {
 
     // CREATE
     pub async fn insert_product(

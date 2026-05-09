@@ -1,8 +1,8 @@
 
 use axum::Json;
 use chrono::Utc;
-use jsonwebtoken::{EncodingKey, Header, encode};
 use serde::Deserialize;
+use jsonwebtoken::{EncodingKey, Header, encode};
 use utils::jwt::Claims;
 
 #[derive(Debug, Deserialize)]

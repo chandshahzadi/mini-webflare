@@ -1,16 +1,16 @@
-use axum::{Extension, Json, Router, extract::Path, routing::{delete, get, post}};
-use models::order::{CreateOrder, Order, OrderRepo};
-use utils::db::DB;
+use axum::{
+    Extension, Json, Router, extract::Path, routing::{delete, get, post}
+};
 use sqlx::PgPool;
-use utils::error::AppError;
+use utils::{db::DB, error::AppError};
+use models::order::{Order, Order, Order};
 
 // ➤ create/order
 pub async fn create_order(
-
     Extension(db): Extension<DB>,
     Json(payload): Json<CreateOrder>,
 ) -> Result<Json<Order>, AppError> {
-    let order = OrderRepo::create_order(&db, payload).await?;
+    let order = Order::create_order(&db, payload).await?;
     Ok(Json(order))
 }
 
@@ -19,7 +19,7 @@ pub async fn get_orders(
     Path(user_id): Path<i32>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Order>>, AppError> {
-    let orders = OrderRepo::get_orders(&db, user_id).await?;
+    let orders = Order::get_orders(&db, user_id).await?;
     Ok(Json(orders))
 }
 
@@ -29,7 +29,7 @@ pub async fn update_order(
     Extension(db): Extension<DB>,
     Json(payload): Json<CreateOrder>,
 ) -> Result<Json<Order>, AppError> {
-    let order = OrderRepo::update_order(&db, id, payload.quantity).await?;
+    let order = Order::update_order(&db, id, payload.quantity).await?;
     Ok(Json(order))
 }
 
@@ -37,9 +37,9 @@ pub async fn update_order(
 pub async fn delete_order(
     Path(id): Path<i32>,
     Extension(db): Extension<DB>,
-) -> Result<Json<String>, AppError> {
-    OrderRepo::delete_order(&db, id).await?;
-    Ok(Json("Deleted successfully".to_string()))
+) -> Result<(), AppError> {
+    Order::delete_order(&db, id).await?;
+    Ok(())
 }
 pub fn router() -> Router<()> {
     Router::new()

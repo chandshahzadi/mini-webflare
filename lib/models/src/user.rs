@@ -18,9 +18,8 @@ pub struct CreateUser {
     pub password: String,
     pub quantity: String
 }
-pub struct UserRepo;
 
-impl UserRepo {
+impl User {
     pub async fn create(
         pool: &PgPool, 
         payload: &CreateUser,

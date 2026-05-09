@@ -22,9 +22,7 @@ pub struct UpdateOrder {
     pub total_price: f64,
 }
 
-pub struct OrderRepo;
-
-impl OrderRepo {
+impl Order {
 
     // create/order
     pub async fn create_order(

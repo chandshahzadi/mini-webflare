@@ -1,7 +1,7 @@
-use axum::{Extension, Router};
-use utils::{
-    db::DB
-};
+use axum::{
+    Extension, Router}
+;
+use utils::{db::DB};
 use crate::{authentication, endpoints};
 
 pub fn router(state: DB) -> Router {

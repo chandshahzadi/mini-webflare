@@ -23,10 +23,8 @@ pub struct UpdateCart {
     pub quantity: i32,
 }
 
-pub struct CartRepo;
-
-impl CartRepo {
-
+impl Cart {
+    
     // create/cart
     pub async fn insert_to_cart(
         pool: &PgPool, 

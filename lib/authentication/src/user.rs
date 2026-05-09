@@ -3,9 +3,9 @@ use axum::{
 };
 use axum::debug_handler;
 use sqlx::PgPool;
-use models::user::{User, CreateUser};
 use utils::encryption::hash_password;
 use utils::db::DB;
+use models::user::{User, CreateUser};
 
 // create/user
 pub async fn create_user(
