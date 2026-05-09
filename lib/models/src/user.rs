@@ -21,24 +21,25 @@ pub struct CreateUser {
 pub struct UserRepo;
 
 impl UserRepo {
-    pub async fn insert_user(
+    pub async fn create(
         pool: &PgPool, 
         payload: &CreateUser,
     )-> Result<User, sqlx::Error> {
-        sqlx::query_as::<_, User>(
+        sqlx::query_as!(
+            User,
             "INSERT INTO users (first_name, last_name, email, password)
             VALUES ($1, $2, $3, $4)
-            RETURNING id, first_name, last_name, email, password"
+            RETURNING id, first_name, last_name, email, password",
+            payload.first_name,
+            payload.last_name,
+            payload.email,
+            payload.password
         )
-        .bind(payload.first_name.clone())
-        .bind(payload.last_name.clone())
-        .bind(payload.email.clone())
-        .bind(payload.password.clone())
         .fetch_one(pool)
         .await
     }
 
-    pub async fn get_user(
+    pub async fn get(
         pool: &PgPool,
     )-> Result<Vec<User>, sqlx::Error> {
         sqlx::query_as::<_, User>(
@@ -48,7 +49,7 @@ impl UserRepo {
         .await
     }
 
-    pub async fn update_user(
+    pub async fn update(
         pool: &PgPool,
         id: i32,
         payload: &CreateUser,
@@ -76,7 +77,7 @@ impl UserRepo {
         Ok(user)
     }
 
-    pub async fn delete_user(
+    pub async fn delete(
         pool: &PgPool, 
         id: i32
     )-> Result<(), sqlx::Error> {
