@@ -2,7 +2,6 @@ use axum::{
     Json, extract::{Path, State}, http::StatusCode
 };
 use axum::debug_handler;
-use sqlx::PgPool;
 use utils::encryption::hash_password;
 use utils::db::DB;
 use models::user::{User, CreateUser};
@@ -40,13 +39,13 @@ pub async fn create_user(
 }
 
 // get/users
-pub async fn get_users(State(pool): State<PgPool>) -> Result<Json<Vec<User>>, StatusCode> {
-                eprintln!("DATABASE ERROR: {:?}", pool);
+pub async fn get_users(State(db): State<DB>) -> Result<Json<Vec<User>>, StatusCode> {
+                eprintln!("DATABASE ERROR: {:?}", db);
 
     let users = sqlx::query_as::<_, User>(
         "SELECT id, first_name, last_name, email, password FROM users"
     )
-    .fetch_all(&pool)
+    .fetch_all(&db)
     .await;
 
     match users {

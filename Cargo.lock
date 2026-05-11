@@ -1496,6 +1496,7 @@ dependencies = [
  "chrono",
  "serde",
  "sqlx",
+ "utils",
 ]
 
 [[package]]

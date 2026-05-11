@@ -1,5 +1,4 @@
 use axum::Router;
-use sqlx::PgPool;
 pub mod user;
 pub mod product;
 pub mod cart;

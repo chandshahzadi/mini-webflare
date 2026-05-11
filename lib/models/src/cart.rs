@@ -1,7 +1,7 @@
 
 use serde::{Serialize, Deserialize};
-use sqlx::{PgPool, Result};
 use sqlx::FromRow;
+use utils::{db::DB, error::AppError};
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Cart {
@@ -26,10 +26,10 @@ pub struct UpdateCart {
 impl Cart {
     
     // create/cart
-    pub async fn insert_to_cart(
-        pool: &PgPool, 
+    pub async fn create(
+        db: DB, 
         new_cart: CreateCart,
-    ) -> Result<Cart> {
+    ) -> Result<Cart, AppError> {
         let cart = sqlx::query_as!(
             Cart,
             r#"
@@ -41,18 +41,17 @@ impl Cart {
             new_cart.product_id,
             new_cart.quantity
         )
-        .fetch_one(pool)
+        .fetch_one(&db)
         .await?;
-                println!("add cart: {:?}", cart);
-
+        println!("add cart: {:?}", cart);
         Ok(cart)
     }
 
     // get/cart
-    pub async fn get_cart(
-        pool: &PgPool, 
+    pub async fn get(
+        db: DB, 
         user_id: i32,
-    ) -> Result<Vec<Cart>> {
+    ) -> Result<Vec<Cart>, AppError> {
         let carts = sqlx::query_as!(
             Cart,
             r#"
@@ -62,18 +61,18 @@ impl Cart {
             "#,
             user_id
         )
-        .fetch_all(pool)
+        .fetch_all(&db)
         .await?;
         println!("get cart: {:?}", carts);
         Ok(carts)
     }
 
     // update/cart
-    pub async fn update_cart(
-        pool: &PgPool, 
+    pub async fn update(
+        db: DB, 
         id: i32, 
         quantity: i32,
-    ) -> Result<Cart, sqlx::Error> {
+    ) -> Result<Cart, AppError> {
         let cart = sqlx::query_as!(
             Cart,
             r#"
@@ -85,22 +84,22 @@ impl Cart {
             quantity,
             id
         )
-        .fetch_one(pool)
+        .fetch_one(&db)
         .await?;
         println!("updated cart: {:?}", cart);
         Ok(cart)
     }
 
     // delete/cart
-    pub async fn delete_from_cart(
-        pool: &PgPool, 
+    pub async fn delete(
+        db: DB, 
         cart_id: i32,
-    ) -> Result<u64> {
+    ) -> Result<u64, AppError> {
         let result = sqlx::query!(
             "DELETE FROM carts WHERE id = $1",
             cart_id
         )
-        .execute(pool)
+        .execute(&db)
         .await?;
             println!("delete cart: {:?}", result);
 

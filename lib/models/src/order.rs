@@ -1,6 +1,7 @@
 use serde::{Serialize, Deserialize};
-use sqlx::{FromRow, PgPool};
+use sqlx::{FromRow};
 use chrono::NaiveDateTime;
+use utils::{db::DB, error::AppError};
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Order {
@@ -25,10 +26,10 @@ pub struct UpdateOrder {
 impl Order {
 
     // create/order
-    pub async fn create_order(
-        pool: &PgPool, 
+    pub async fn create(
+        db: DB,
         payload: CreateOrder,
-    ) -> Result<Order, sqlx::Error> {
+    ) -> Result<Order, AppError> {
         let order = sqlx::query_as!(
             Order,
             r#"
@@ -38,17 +39,16 @@ impl Order {
             "#,
             payload.user_id,
             payload.total_price     )
-        .fetch_one(pool)
+        .fetch_one(&db)
         .await?;
-
         Ok(order)
     }
 
     // get/order
-    pub async fn get_orders(
-        pool: &PgPool, 
+    pub async fn get(
+        db: DB,
         user_id: i32,
-    ) -> Result<Vec<Order>, sqlx::Error> {
+    ) -> Result<Vec<Order>, AppError> {
         let orders = sqlx::query_as!(
             Order,
             r#"
@@ -58,18 +58,18 @@ impl Order {
             "#,
             user_id
         )
-        .fetch_all(pool)
+        .fetch_all(&db)
         .await?;
 
         Ok(orders)
     }
 
     // update/order
-    pub async fn update_order(
-        pool: &PgPool, 
+    pub async fn update(
+        db: DB,
         id: i32, 
         payload: UpdateOrder,
-    ) -> Result<Order, sqlx::Error> {
+    ) -> Result<Order, AppError> {
         let order = sqlx::query_as!(
             Order,
             r#"
@@ -81,22 +81,22 @@ impl Order {
             payload.total_price,
             id
         )
-        .fetch_one(pool)
+        .fetch_one(&db)
         .await?;
 
         Ok(order)
     }
 
     // delete/order
-    pub async fn delete_order(
-        pool: &PgPool, 
+    pub async fn delete(
+        db: DB,
         id: i32,
-    ) -> Result<u64, sqlx::Error> {
+    ) -> Result<u64, AppError> {
         let result = sqlx::query!(
             "DELETE FROM orders WHERE id = $1",
             id
         )
-        .execute(pool)
+        .execute(&db)
         .await?;
 
         Ok(result.rows_affected())

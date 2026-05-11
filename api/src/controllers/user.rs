@@ -1,7 +1,6 @@
 use axum::{ 
     Extension, Json, Router, extract::Path, middleware, routing::{get, post, put}
 };
-use sqlx::{PgPool}; 
 use utils::{db::DB, error::AppError, middleware::auth_middleware};
 use models::user::{CreateUser, User};
 

@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
-use sqlx::{FromRow, PgPool};
-
+use sqlx::{FromRow};
+use utils::{db::DB, error::AppError};
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Product {
@@ -9,7 +9,6 @@ pub struct Product {
     pub price: f64,
 }
 
-// Request body
 #[derive(Debug, Deserialize)]
 pub struct UpdateProduct {
     pub name: String,
@@ -18,39 +17,41 @@ pub struct UpdateProduct {
 
 impl Product {
 
-    // CREATE
-    pub async fn insert_product(
- pool: &PgPool, 
+    // create
+    pub async fn create(
+        db: DB,
          payload: &UpdateProduct,
-    )-> Result<Product, sqlx::Error> {
-        sqlx::query_as::<_, Product>(
+    )-> Result<Product, AppError> {
+        let product = sqlx::query_as::<_, Product>(
             "INSERT INTO products (name, price)
             VALUES ($1, $2)
             RETURNING id, name, price"
         )
         .bind(&payload.name)
         .bind(payload.price)
-        .fetch_one(pool)
-        .await
+        .fetch_one(&db)
+        .await?;
+        Ok(product)
     }
 
-        // GET ALL
-        pub async fn get_products(
-            pool: &PgPool,
-        )-> Result<Vec<Product>, sqlx::Error> {
-            sqlx::query_as::<_, Product>(
+        // get
+        pub async fn get(
+            db: DB,
+        )-> Result<Vec<Product>, AppError> {
+            let product = sqlx::query_as::<_, Product>(
                 "SELECT id, name, price FROM products"
             )
-            .fetch_all(pool)
-            .await
+            .fetch_all(&db)
+            .await?;
+        Ok(product)
         }
 
-    // UPDATE
-    pub async fn update_product_db(
-    pool: &PgPool,
+    // update
+    pub async fn update(
+    db: DB,
     id: i32,
     payload: &UpdateProduct,
-    ) -> Result<Product, sqlx::Error> {
+    ) -> Result<Product, AppError> {
         let product = sqlx::query_as!(
             Product,
             r#"
@@ -63,19 +64,19 @@ impl Product {
             payload.price,
             id
         )
-        .fetch_one(pool)
+        .fetch_one(&db)
         .await?;
 
         Ok(product)
     }
 
-    // DELETE
-    pub async fn delete_product_db(
-        pool: &PgPool, 
+    // delete
+    pub async fn delete(
+        db: DB,
         id: i32
     )-> Result<(), sqlx::Error> {
         sqlx::query!("DELETE FROM products WHERE id=$1", id)
-            .execute(pool)
+            .execute(&db)
             .await?;
         Ok(())
     }

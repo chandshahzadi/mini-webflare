@@ -1,7 +1,9 @@
 [workspace]
+resolver = "1"
 members = [
     "lib/authentication",
     "lib/models",
     "lib/utils",
     "api"
 ]
+

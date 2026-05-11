@@ -1,5 +1,6 @@
 use serde::{Serialize, Deserialize};
-use sqlx::{FromRow, PgPool};
+use sqlx::FromRow;
+use utils::{db::DB, error::AppError};
 
 #[derive(Debug, Serialize, Deserialize, FromRow)] 
 pub struct User {
@@ -21,10 +22,10 @@ pub struct CreateUser {
 
 impl User {
     pub async fn create(
-        pool: &PgPool, 
+        db: DB,
         payload: &CreateUser,
-    )-> Result<User, sqlx::Error> {
-        sqlx::query_as!(
+    )-> Result<User, AppError> {
+        let user = sqlx::query_as!(
             User,
             "INSERT INTO users (first_name, last_name, email, password)
             VALUES ($1, $2, $3, $4)
@@ -34,25 +35,27 @@ impl User {
             payload.email,
             payload.password
         )
-        .fetch_one(pool)
-        .await
+        .fetch_one(&db)
+        .await?;
+        Ok(user)
     }
 
     pub async fn get(
-        pool: &PgPool,
-    )-> Result<Vec<User>, sqlx::Error> {
-        sqlx::query_as::<_, User>(
+        db: DB,
+    )-> Result<Vec<User>, AppError> {
+        let user = sqlx::query_as::<_, User>(
             "SELECT id, first_name, last_name, email, password FROM users"
         )
-        .fetch_all(pool)
-        .await
+        .fetch_all(&db)
+        .await?;
+        Ok(user)
     }
 
     pub async fn update(
-        pool: &PgPool,
+        db: DB,
         id: i32,
         payload: &CreateUser,
-    ) -> Result<User, sqlx::Error> {
+    ) -> Result<User, AppError> {
         let user = sqlx::query_as!(
             User,
             r#"
@@ -70,18 +73,18 @@ impl User {
             payload.password,
             id
         )
-        .fetch_one(pool)
+        .fetch_one(&db)
         .await?;
 
         Ok(user)
     }
 
     pub async fn delete(
-        pool: &PgPool, 
+        db: DB,
         id: i32
-    )-> Result<(), sqlx::Error> {
+    )-> Result<(), AppError> {
         sqlx::query!("DELETE FROM users WHERE id=$1", id)
-            .execute(pool)
+            .execute(&db)
             .await?;
         Ok(())
     }
