@@ -7,8 +7,8 @@ use models::product::{Product, UpdateProduct};
 // ➤ create/cart
 pub async fn insert_product(
     Extension(db): Extension<DB>,
-    Json(payload): Json<UpdateProduct>,
-) -> Result<Json<()>, AppError> {
+    Json(payload): Json<Product>,
+) -> Result<(), AppError> {
      Product::create(db, &payload).await
 }
 
@@ -16,7 +16,7 @@ pub async fn insert_product(
 pub async fn get_products(
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Product>>, AppError> {
-    Product::get(&db).await.map(Json)
+    Product::get(db).await.map(Json)
 }
 
 pub async fn update_product_db(
@@ -24,15 +24,15 @@ pub async fn update_product_db(
     Extension(db): Extension<DB>,
     Json(payload): Json<UpdateProduct>,
 ) -> Result<Json<Product>, AppError> {
-     Product::update(&db, id, &payload).await.map(Json)
+     Product::update(db, id, &payload).await.map(Json)
 }
 
 // ➤ delete/product
-pub async fn delete(
+pub async fn delete_product_db(
     Path(id): Path<i32>,
     Extension(db): Extension<DB>,
-) -> Result<Json<()>, AppError> {
-    Product::delete_product_db(&db, id).await
+) -> Result<(), AppError> {
+    Product::delete(db, id).await
 }
 
 pub fn router() -> Router<DB> {

@@ -2,15 +2,6 @@ use serde::{Serialize, Deserialize};
 use sqlx::FromRow;
 use utils::{db::DB, error::AppError};
 
-#[derive(Debug, Serialize, Deserialize, FromRow)] 
-pub struct User {
-    pub id: i32,
-    pub first_name: String,
-    pub last_name: String,
-    pub email: Option<String>,
-    pub password: String,
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateUser {
     pub first_name: String,
@@ -20,12 +11,12 @@ pub struct CreateUser {
     pub quantity: String
 }
 
-impl User {
+impl CreateUser {
     pub async fn create(
         db: DB,
         payload: &CreateUser,
-    )-> Result<User, AppError> {
-        let user = sqlx::query_as!(
+    )-> Result<(), AppError> {
+        sqlx::query_as!(
             User,
             "INSERT INTO users (first_name, last_name, email, password)
             VALUES ($1, $2, $3, $4)
@@ -37,8 +28,20 @@ impl User {
         )
         .fetch_one(&db)
         .await?;
-        Ok(user)
+        Ok(())
     }
+}
+
+#[derive(Debug, Serialize, Deserialize, FromRow)] 
+pub struct User {
+    pub id: i32,
+    pub first_name: String,
+    pub last_name: String,
+    pub email: Option<String>,
+    pub password: String,
+}
+
+impl  User {
 
     pub async fn get(
         db: DB,
@@ -77,14 +80,18 @@ impl User {
         .await?;
         Ok(p)
     }
+}
 
-    pub async fn delete(
-        db: DB,
-        id: i32
-    )-> Result<(), AppError> {
-        sqlx::query!("DELETE FROM users WHERE id=$1", id)
-            .execute(&db)
-            .await?;
-        Ok(())
-    }
+// delete/user
+pub async fn delete(
+    db: DB,
+    id: i32
+)-> Result<(), AppError> {
+    sqlx::query(
+        "DELETE FROM users WHERE id=$1"
+    )
+    .bind(id)
+    .execute(&db)
+    .await?;
+    Ok(())
 }

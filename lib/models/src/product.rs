@@ -9,12 +9,6 @@ pub struct Product {
     pub price: f64,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct UpdateProduct {
-    pub name: String,
-    pub price: f64,
-}
-
 impl Product {
 
     // create
@@ -42,9 +36,19 @@ impl Product {
         "SELECT id, name, price FROM products"
         )
         .fetch_all(&db)
-        .await?;
+        .await
+        .map_err(|e| AppError::DbError(e.to_string()))?;
         Ok(product)
     }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateProduct {
+    pub name: String,
+    pub price: f64,
+}
+
+impl UpdateProduct {
 
     // update
     pub async fn update(
@@ -66,18 +70,16 @@ impl Product {
         )
         .fetch_one(&db)
         .await?;
-
         Ok(product)
     }
-
-    // delete
-    pub async fn delete(
-        db: DB,
-        id: i32
-    )-> Result<(), sqlx::Error> {
-        sqlx::query!("DELETE FROM products WHERE id=$1", id)
-            .execute(&db)
-            .await?;
-        Ok(())
-    }
+}
+// delete
+pub async fn delete(
+    db: DB,
+    id: i32
+)-> Result<(), AppError> {
+    sqlx::query!("DELETE FROM products WHERE id=$1", id)
+        .execute(&db)
+        .await?;
+    Ok(())
 }

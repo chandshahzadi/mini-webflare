@@ -11,6 +11,6 @@ pub async fn sign_up(
     Ok(signup(axum::extract::State(db), Json(form)).await)
 }
 
-pub fn router() -> Router {
+pub fn router() -> Router<DB>{
     Router::new().route("/signup", post(sign_up))
 }

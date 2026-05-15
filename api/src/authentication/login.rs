@@ -11,6 +11,6 @@ pub async fn login(
     Ok(LoginInput::login(Json(form)).await)
 }
 
-pub fn router() -> Router {
+pub fn router() -> Router<DB> {
     Router::new().route("/login", post(login))
 }
