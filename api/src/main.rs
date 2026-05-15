@@ -1,15 +1,19 @@
-use axum::Router;
-use std::net::SocketAddr;
+use axum::routing::Router;
+use tokio::net::TcpListener;
+use utils::db::DB;
+pub mod routes;
+mod authentication;
+mod controllers;
 
 #[tokio::main]
-async fn main() {
+async fn main(){
 
     let app = Router::new();
+    let listener = TcpListener::bind("0.0.0.0:3000")
+        .await
+        .unwrap();
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3001));
-
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
+    axum::serve(listener, app)
         .await
         .unwrap();
 }

@@ -8,17 +8,15 @@ use models::product::{Product, UpdateProduct};
 pub async fn insert_product(
     Extension(db): Extension<DB>,
     Json(payload): Json<UpdateProduct>,
-) -> Result<Json<Product>, AppError> {
-    let product = Product::create(&db, &payload).await?;
-    Ok(Json(product))   
+) -> Result<Json<()>, AppError> {
+     Product::create(db, &payload).await
 }
 
 // ➤ get/product
 pub async fn get_products(
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Product>>, AppError> {
-    let product = Product::get(&db).await?;
-    Ok(Json(product))
+    Product::get(&db).await.map(Json)
 }
 
 pub async fn update_product_db(
@@ -26,19 +24,18 @@ pub async fn update_product_db(
     Extension(db): Extension<DB>,
     Json(payload): Json<UpdateProduct>,
 ) -> Result<Json<Product>, AppError> {
-    let product = Product::update(&db, id, &payload).await?;
-    Ok(Json(product))
+     Product::update(&db, id, &payload).await.map(Json)
 }
 
 // ➤ delete/product
 pub async fn delete(
     Path(id): Path<i32>,
     Extension(db): Extension<DB>,
-) -> Result<Json<Product>, AppError> {
-    Product::delete_product_db(&db, id).await.map(Json)
+) -> Result<Json<()>, AppError> {
+    Product::delete_product_db(&db, id).await
 }
 
-pub fn router() -> Router<()> {
+pub fn router() -> Router<DB> {
     Router::new()
         .route("/products", get(get_products).post(insert_product))
         .route("/products/:id", get(get_products).put(update_product_db).delete(delete_product_db))

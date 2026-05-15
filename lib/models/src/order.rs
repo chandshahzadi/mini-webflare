@@ -3,6 +3,35 @@ use sqlx::{FromRow};
 use chrono::NaiveDateTime;
 use utils::{db::DB, error::AppError};
 
+#[derive(Debug, Deserialize)]
+pub struct CreateOrder {
+    pub user_id: i32,
+    pub total_price: f64,
+    pub quantity: UpdateOrder,
+}
+
+impl CreateOrder {
+
+    // create/order
+    pub async fn create(
+        db: DB,
+        payload: CreateOrder,
+    ) -> Result<(), AppError> {
+        sqlx::query_as!(
+        Order,
+        r#"
+        INSERT INTO orders (user_id, total_price)
+        VALUES ($1, $2)
+        RETURNING id, user_id, total_price, created_at
+        "#,
+        payload.user_id,
+        payload.total_price)
+        .fetch_one(&db)
+        .await?;
+        Ok(())
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Order {
     pub id: i32,
@@ -11,39 +40,8 @@ pub struct Order {
     pub created_at: Option<NaiveDateTime>,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct CreateOrder {
-    pub user_id: i32,
-    pub total_price: f64,
-    pub quantity: UpdateOrder,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct UpdateOrder {
-    pub total_price: f64,
-}
-
 impl Order {
-
-    // create/order
-    pub async fn create(
-        db: DB,
-        payload: CreateOrder,
-    ) -> Result<Order, AppError> {
-        let order = sqlx::query_as!(
-            Order,
-            r#"
-            INSERT INTO orders (user_id, total_price)
-            VALUES ($1, $2)
-            RETURNING id, user_id, total_price, created_at
-            "#,
-            payload.user_id,
-            payload.total_price     )
-        .fetch_one(&db)
-        .await?;
-        Ok(order)
-    }
-
+    
     // get/order
     pub async fn get(
         db: DB,
@@ -63,6 +61,29 @@ impl Order {
 
         Ok(orders)
     }
+
+    // delete/order
+    pub async fn delete(
+        db: DB,
+        id: i32,
+    ) -> Result<(), AppError> {
+        sqlx::query!(
+            "DELETE FROM orders WHERE id = $1",
+            id
+        )
+        .execute(&db)
+        .await?;
+        Ok(())
+    }
+}
+
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateOrder {
+    pub total_price: f64,
+}
+
+impl UpdateOrder { 
 
     // update/order
     pub async fn update(
@@ -85,21 +106,6 @@ impl Order {
         .await?;
 
         Ok(order)
-    }
-
-    // delete/order
-    pub async fn delete(
-        db: DB,
-        id: i32,
-    ) -> Result<u64, AppError> {
-        let result = sqlx::query!(
-            "DELETE FROM orders WHERE id = $1",
-            id
-        )
-        .execute(&db)
-        .await?;
-
-        Ok(result.rows_affected())
     }
 
 }

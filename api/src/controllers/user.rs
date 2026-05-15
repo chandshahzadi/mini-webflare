@@ -8,17 +8,15 @@ use models::user::{CreateUser, User};
 pub async fn create(
     Extension(db): Extension<DB>,
     Json(payload): Json<CreateUser>,
-) -> Result<Json<User>, AppError> {
-    let user = User::create(&db, &payload).await?;
-    Ok(Json(user))
+) -> Result<Json<()>, AppError> {
+     User::create(&db, &payload).await
 }
 
 // ➤ get/product
 pub async fn get(
      Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<User>>, AppError> {
-    let users = User::get(&db).await?;
-    Ok(Json(users))
+     User::get(&db).await.map(Json)
 }
 
 // ➤ update/product 
@@ -27,8 +25,7 @@ pub async fn update(
     Extension(db): Extension<DB>,
     Json(payload): Json<CreateUser>,
 ) -> Result<Json<User>, AppError> {
-    let users = User::update(&db, id, &payload).await?;
-    Ok(Json(users))
+     User::update(&db, id, &payload).await.map(Json)
 }
 
 // ➤ delete/product
@@ -36,10 +33,9 @@ pub async fn delete(
     Path(id): Path<i32>,
     Extension(db): Extension<DB>,
 ) -> Result<(), AppError> {
-    User::delete(&db, id).await?;
-    Ok(())
+    User::delete(&db, id).await
 }
-pub fn router() -> Router<()> {
+pub fn router() -> Router<DB> {
     Router::new()
         .route("/users", get(get).post(create))
         .route("/users/:id", get(get).put(update).delete(delete))

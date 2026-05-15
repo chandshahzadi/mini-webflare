@@ -20,31 +20,31 @@ impl Product {
     // create
     pub async fn create(
         db: DB,
-         payload: &UpdateProduct,
-    )-> Result<Product, AppError> {
-        let product = sqlx::query_as::<_, Product>(
+        payload: &Product,
+    )-> Result<(), AppError> {
+        sqlx::query(
             "INSERT INTO products (name, price)
             VALUES ($1, $2)
             RETURNING id, name, price"
         )
         .bind(&payload.name)
         .bind(payload.price)
-        .fetch_one(&db)
+        .execute(&db)
+        .await?;
+        Ok(())
+    }
+
+    // get
+    pub async fn get(
+        db: DB,
+    )-> Result<Vec<Product>, AppError> {
+        let product = sqlx::query_as::<_, Product>(
+        "SELECT id, name, price FROM products"
+        )
+        .fetch_all(&db)
         .await?;
         Ok(product)
     }
-
-        // get
-        pub async fn get(
-            db: DB,
-        )-> Result<Vec<Product>, AppError> {
-            let product = sqlx::query_as::<_, Product>(
-                "SELECT id, name, price FROM products"
-            )
-            .fetch_all(&db)
-            .await?;
-        Ok(product)
-        }
 
     // update
     pub async fn update(

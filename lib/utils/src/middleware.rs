@@ -1,5 +1,5 @@
 use axum::{
-    http::Request,
+    extract::Request,
     middleware::Next,
     response::{Response, IntoResponse},
     http::StatusCode,
@@ -7,9 +7,9 @@ use axum::{
 
 use crate::jwt::{verify_token, Claims};
 
-pub async fn auth_middleware<B>(
-    mut req: Request<B>,
-    next: Next<B>,
+pub async fn auth_middleware(
+    mut req: Request,
+    next: Next,
 ) -> Response {
     let auth_header = match req.headers().get("Authorization") {
         Some(h) => h,
@@ -48,8 +48,8 @@ pub async fn auth_middleware<B>(
 }
 
 pub async fn admin_only<B>(
-    req: Request<B>,
-    next: Next<B>,
+    req: Request,
+    next: Next,
 ) -> Response {
 
     let claims = match req.extensions().get::<Claims>() {

@@ -2,16 +2,14 @@ use axum::{
     Json, Router, extract::{Extension, Path}, routing::{get, post}
 };
 use utils::{db::DB, error::AppError};
-use models::cart::{Cart, CreateCart, UpdateCart, Cart};
+use models::cart::{Cart, CreateCart};
 
 // ➤ create/cart
 pub async fn add_to_cart(
     Extension(db): Extension<DB>,
     Json(payload): Json<CreateCart>,
-) -> Result<Json<Cart>, AppError> {
-    Cart::create(&db, payload)
-    .await
-    .map(Json)
+) -> Result<(), AppError> {
+    payload.create(db).await
 }
 
 // ➤ get/cart
@@ -19,20 +17,16 @@ pub async fn get_cart(
     Path(user_id): Path<i32>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Cart>>, AppError> {
-    Cart::get(&db, user_id)
-    .await
-    .map(Json)
+    Cart::get(db, user_id).await.map(Json)
 }
 
 // ➤ update/cart 
 pub async fn update_cart(
     Path(id): Path<i32>,
     Extension(db): Extension<DB>,
-    Json(payload): Json<UpdateCart>,
+    Json(payload): Json<Cart>,
 ) -> Result<Json<Cart>, AppError> {
-    Cart::update(&db, id, payload.quantity)
-    .await
-    .map(Json)
+    Cart::update(db, id, payload.quantity).await.map(Json)
 }
 
 // ➤ delete/cart
@@ -40,10 +34,10 @@ pub async fn delete_from_cart(
     Path(id): Path<i32>,
     Extension(db): Extension<DB>,
 ) -> Result<(), AppError> {
-    Cart::delete(&db, id).await
+    Cart::delete(db, id).await
 }
 
-pub fn router() -> Router<()> {    
+pub fn router() -> Router<DB> {    
     Router::new()
         .route("/cart/add", post(add_to_cart))
         .route("/cart", get(get_cart))

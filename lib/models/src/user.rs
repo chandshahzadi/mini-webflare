@@ -51,12 +51,12 @@ impl User {
         Ok(user)
     }
 
-    pub async fn update(
+        pub async fn update(
         db: DB,
         id: i32,
         payload: &CreateUser,
     ) -> Result<User, AppError> {
-        let user = sqlx::query_as!(
+        let p = sqlx::query_as!(
             User,
             r#"
             UPDATE users
@@ -75,8 +75,7 @@ impl User {
         )
         .fetch_one(&db)
         .await?;
-
-        Ok(user)
+        Ok(p)
     }
 
     pub async fn delete(
