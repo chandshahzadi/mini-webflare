@@ -31,11 +31,11 @@ pub async fn update_order(
 
 // ➤ delete/order
 pub async fn delete_order(
-    Path(id): Path<i32>,
+     Path(id): Path<i32>,
     Extension(db): Extension<DB>,
 ) -> Result<(), AppError> {
     Order::delete(db, id).await
-}
+} 
 
 pub fn router() -> Router<DB> {
     Router::new()

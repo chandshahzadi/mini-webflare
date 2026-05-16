@@ -2,7 +2,7 @@ use axum::{
     Json, Router, extract::{Extension, Path}, routing::{get, post}
 };
 use utils::{db::DB, error::AppError};
-use models::cart::{Cart, CreateCart};
+use models::cart::{Cart, CreateCart, delete};
 
 // ➤ create/cart
 pub async fn add_to_cart(
@@ -34,7 +34,7 @@ pub async fn delete_from_cart(
     Path(id): Path<i32>,
     Extension(db): Extension<DB>,
 ) -> Result<(), AppError> {
-    Cart::delete(db, id).await
+    delete(db, id).await
 }
 
 pub fn router() -> Router<DB> {    

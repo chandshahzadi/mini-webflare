@@ -80,18 +80,19 @@ impl  User {
         .await?;
         Ok(p)
     }
+    // delete/user
+    pub async fn delete(
+        db: DB,
+        id: i32
+    )-> Result<(), AppError> {
+        sqlx::query(
+            "DELETE FROM users WHERE id=$1"
+        )
+        .bind(id)
+        .execute(&db)
+        .await?;
+        Ok(())
+    }
 }
 
-// delete/user
-pub async fn delete(
-    db: DB,
-    id: i32
-)-> Result<(), AppError> {
-    sqlx::query(
-        "DELETE FROM users WHERE id=$1"
-    )
-    .bind(id)
-    .execute(&db)
-    .await?;
-    Ok(())
-}
+

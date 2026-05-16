@@ -85,21 +85,22 @@ impl Cart {
         println!("updated cart: {:?}", cart);
         Ok(cart)
     }
-
-    // delete/cart
-    pub async fn delete(
-        db: DB, 
-        cart_id: i32,
-    ) -> Result<(), AppError> {
-       sqlx::query!(
-            "DELETE FROM carts WHERE id = $1",
-            cart_id
-        )
-        .execute(&db)
-        .await?;
-        Ok(())
-    }
 }
+
+// delete/cart
+pub async fn delete(
+    db: DB, 
+    cart_id: i32,
+) -> Result<(), AppError> {
+    sqlx::query!(
+        "DELETE FROM carts WHERE id = $1",
+        cart_id
+    )
+    .execute(&db)
+    .await?;
+    Ok(())
+}
+
 
 
 

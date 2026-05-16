@@ -40,6 +40,19 @@ impl Product {
         .map_err(|e| AppError::DbError(e.to_string()))?;
         Ok(product)
     }
+    // delete
+    pub async fn delete(
+        db: DB,
+        id: i32
+    )-> Result<(), AppError> {
+        sqlx::query!(
+            "DELETE FROM products WHERE id=$1",
+            id
+        )
+        .execute(&db)
+        .await?;
+        Ok(())
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -73,13 +86,4 @@ impl UpdateProduct {
         Ok(product)
     }
 }
-// delete
-pub async fn delete(
-    db: DB,
-    id: i32
-)-> Result<(), AppError> {
-    sqlx::query!("DELETE FROM products WHERE id=$1", id)
-        .execute(&db)
-        .await?;
-    Ok(())
-}
+

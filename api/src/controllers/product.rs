@@ -24,7 +24,7 @@ pub async fn update_product_db(
     Extension(db): Extension<DB>,
     Json(payload): Json<UpdateProduct>,
 ) -> Result<Json<Product>, AppError> {
-     Product::update(db, id, &payload).await.map(Json)
+     UpdateProduct::update(db, id, &payload).await.map(Json)
 }
 
 // ➤ delete/product
