@@ -38,5 +38,5 @@ pub async fn delete_product_db(
 pub fn router() -> Router<DB> {
     Router::new()
         .route("/products", get(get_products).post(insert_product))
-        .route("/products/:id", get(get_products).put(update_product_db).delete(delete_product_db))
+        .route("/products/{id}", get(get_products).put(update_product_db).delete(delete_product_db))
 }

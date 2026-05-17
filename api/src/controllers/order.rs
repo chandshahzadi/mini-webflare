@@ -40,6 +40,6 @@ pub async fn delete_order(
 pub fn router() -> Router<DB> {
     Router::new()
         .route("/orders", get(get_orders).post(create_order))
-        .route("/orders/:id", get(get_orders).put(update_order).delete(delete_order))
+        .route("/orders/{id}", get(get_orders).put(update_order).delete(delete_order))
 }
 

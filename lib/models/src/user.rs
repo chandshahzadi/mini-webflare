@@ -1,3 +1,4 @@
+use axum::{Json, extract::Path};
 use serde::{Serialize, Deserialize};
 use sqlx::FromRow;
 use utils::{db::DB, error::AppError};
@@ -8,7 +9,6 @@ pub struct CreateUser {
     pub last_name: String,
     pub email: String,
     pub password: String,
-    pub quantity: String
 }
 
 impl CreateUser {
@@ -42,22 +42,36 @@ pub struct User {
 }
 
 impl  User {
-
-    pub async fn get(
+    //find user by id
+    pub async fn find_by_id(
         db: DB,
-    )-> Result<Vec<User>, AppError> {
-        let user = sqlx::query_as::<_, User>(
+        id: i32,
+    ) -> Result<Json<User>, AppError> {
+        let users = sqlx::query_as::<_, User>(
+            "SELECT id, first_name, last_name, email, password FROM users WHERE id = $1",
+        )
+        .bind(id)
+        .fetch_one(&db)
+        .await?;
+        Ok(Json(users))
+    }
+
+    // find all users
+      pub async fn find(
+        db: DB,
+    ) -> Result<Vec<User>, AppError> {
+        let users = sqlx::query_as::<_, User>(
             "SELECT id, first_name, last_name, email, password FROM users"
         )
         .fetch_all(&db)
         .await?;
-        Ok(user)
+        Ok(users)
     }
 
-        pub async fn update(
-        db: DB,
-        id: i32,
-        payload: &CreateUser,
+    pub async fn update(
+    db: DB,
+    id: i32,
+    payload: &CreateUser,
     ) -> Result<User, AppError> {
         let p = sqlx::query_as!(
             User,
@@ -80,19 +94,22 @@ impl  User {
         .await?;
         Ok(p)
     }
-    // delete/user
-    pub async fn delete(
-        db: DB,
-        id: i32
-    )-> Result<(), AppError> {
-        sqlx::query(
-            "DELETE FROM users WHERE id=$1"
-        )
-        .bind(id)
-        .execute(&db)
-        .await?;
-        Ok(())
-    }
+
+    // delete user
+  pub async fn delete(
+    db: DB,
+    id: i32,
+) -> Result<Option<User>, AppError> {
+    let user = sqlx::query_as::<_, User>(
+        "DELETE FROM users
+         WHERE id = $1
+         RETURNING id, first_name, last_name, email, password"
+    )
+    .bind(id)
+    .fetch_optional(&db)
+    .await?;
+    Ok(user)
+}
 }
 
 

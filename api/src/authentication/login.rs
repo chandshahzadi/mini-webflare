@@ -1,11 +1,11 @@
 use axum::{
-    extract::Extension, Json, Router, routing::post
+    Json, Router, extract::{Extension, State}, routing::post
 };
 use utils::{db::DB, error::AppError};
 use authentication::login::LoginInput;
 
 pub async fn login(
-    Extension(db): Extension<DB>,
+    State(db): State<DB>,
     Json(form): Json<LoginInput>,
 ) -> Result<Json<String>, AppError> {
     Ok(LoginInput::login(Json(form)).await)

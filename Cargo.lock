@@ -245,6 +245,7 @@ dependencies = [
  "authentication",
  "axum",
  "chrono",
+ "dotenvy",
  "jsonwebtoken",
  "models",
  "serde",

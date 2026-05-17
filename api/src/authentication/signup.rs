@@ -1,14 +1,17 @@
 use axum::{
-    Json, Router, extract::Extension, routing::post
+    extract::{State}, Json, Router, routing::post
 };
 use utils::{db::DB, error::AppError};
 use authentication::signup::{SignupInput, signup};
 
 pub async fn sign_up(
-    Extension(db): Extension<DB>,
+    State(db): State<DB>,
     Json(form): Json<SignupInput>,
 ) -> Result<Json<String>, AppError> {
-    Ok(signup(axum::extract::State(db), Json(form)).await)
+    match signup(db, form).await {
+        Ok(token) => Ok(Json(token)),
+        Err(_) => Err(AppError::DbError("signup failed".to_owned())),
+    }
 }
 
 pub fn router() -> Router<DB>{

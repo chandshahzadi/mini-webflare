@@ -42,7 +42,7 @@ pub fn router() -> Router<DB> {
         .route("/cart/add", post(add_to_cart))
         .route("/cart", get(get_cart))
         .route(
-            "/cart/:id",
+            "/cart/{id}",
             get(get_cart).put(update_cart).delete(delete_from_cart)
         )
 }
