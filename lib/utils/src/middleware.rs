@@ -1,65 +1,57 @@
 use axum::{
-    extract::Request,
+    extract::{OriginalUri, Request},
     middleware::Next,
-    response::{Response, IntoResponse},
-    http::StatusCode,
+    response::Response,
 };
 
-use crate::jwt::{verify_token, Claims};
+use crate::{enums::Role, error::AppError, jwt::verify_jwt};
 
-pub async fn auth_middleware(
-    mut req: Request,
-    next: Next,
-) -> Response {
-    let auth_header = match req.headers().get("Authorization") {
-        Some(h) => h,
-        None => {
-            println!("No Authorization header found");
-            return StatusCode::UNAUTHORIZED.into_response();
-        }
-    };
-
-    let auth_str = match auth_header.to_str() {
-        Ok(s) => s,
-        Err(_) => {
-            println!("Authorization header invalid string");
-            return StatusCode::UNAUTHORIZED.into_response();
-        }
-    };
-
-    if !auth_str.to_lowercase().starts_with("bearer ") {
-        println!("Authorization header does not start with Bearer");
-        return StatusCode::UNAUTHORIZED.into_response();
-    }
-
-    let token = auth_str[7..].trim();
-        println!("Token: {}", token);
-    let claims: Claims = match verify_token(token) {
-        Ok(c) => c,
-        Err(_) => {
-            println!("Token verification failed");
-            return StatusCode::UNAUTHORIZED.into_response();
-        }
-    };
-
-    req.extensions_mut().insert(claims);
-
-    next.run(req).await
+#[derive(Clone, Debug)]
+pub struct AuthUser {
+    pub id: i32,
+    pub role: Role,
 }
 
-pub async fn admin_only<B>(
-    req: Request,
-    next: Next,
-) -> Response {
+pub async fn verify_token(mut req: Request, next: Next) -> Result<Response, AppError> {
+    let auth_header = req
+        .headers()
+        .get("Authorization")
+        .and_then(|h| h.to_str().ok())
+        .ok_or(AppError::Unauthorized)?;
 
-    let claims = match req.extensions().get::<Claims>() {
-        Some(c) => c,
-        None => return StatusCode::UNAUTHORIZED.into_response(),
+    let token = auth_header
+        .strip_prefix("Bearer ")
+        .ok_or(AppError::Unauthorized)?;
+
+    let claims = match verify_jwt(token) {
+        Ok(c) => c,
+        Err(_) => return Err(AppError::Unauthorized),
+    };
+    let user = AuthUser {
+        id: claims.sub,
+        role: claims.role,
     };
 
-    if claims.role != "admin" {
-        return StatusCode::FORBIDDEN.into_response();
+    req.extensions_mut().insert(user);
+
+    Ok(next.run(req).await)
+}
+
+pub async fn verify_role(
+    OriginalUri(uri): OriginalUri,
+    req: Request,
+    next: Next,
+) -> Result<Response, AppError> {
+    let path = uri.path();
+
+    let user = req
+        .extensions()
+        .get::<AuthUser>()
+        .ok_or(AppError::Unauthorized)?;
+
+    if path.starts_with("/admin") && user.role != Role::Admin {
+        return Err(AppError::Unauthorized);
     }
 
-    next.run(req).await
+    Ok(next.run(req).await)
 }

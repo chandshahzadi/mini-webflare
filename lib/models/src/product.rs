@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize};
-use sqlx::{FromRow};
+use serde::{Deserialize, Serialize};
+use sqlx::{FromRow, types::Json};
 use utils::{db::DB, error::AppError};
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
@@ -10,16 +10,12 @@ pub struct Product {
 }
 
 impl Product {
-
     // create
-    pub async fn create(
-        db: DB,
-        payload: &Product,
-    )-> Result<(), AppError> {
+    pub async fn create(db: DB, payload: &Product) -> Result<(), AppError> {
         sqlx::query(
             "INSERT INTO products (name, price)
             VALUES ($1, $2)
-            RETURNING id, name, price"
+            RETURNING id, name, price",
         )
         .bind(&payload.name)
         .bind(payload.price)
@@ -29,28 +25,41 @@ impl Product {
     }
 
     // get
-    pub async fn get(
-        db: DB,
-    )-> Result<Vec<Product>, AppError> {
-        let product = sqlx::query_as::<_, Product>(
-        "SELECT id, name, price FROM products"
+    pub async fn find(db: DB) -> Result<Vec<Product>, AppError> {
+        let products = sqlx::query_as!(
+            Product,
+            r#"
+            SELECT id, name, price
+            FROM products
+            "#
         )
         .fetch_all(&db)
         .await
         .map_err(|e| AppError::DbError(e.to_string()))?;
-        Ok(product)
+
+        Ok(products)
     }
-    // delete
-    pub async fn delete(
-        db: DB,
-        id: i32
-    )-> Result<(), AppError> {
-        sqlx::query!(
-            "DELETE FROM products WHERE id=$1",
+
+    // get product by id
+    pub async fn find_by_id(db: DB, id: i32) -> Result<Product, AppError> {
+        let products = sqlx::query_as!(
+            Product,
+            r#"
+            SELECT id, name, price FROM products WHERE id=$1
+            "#,
             id
         )
-        .execute(&db)
-        .await?;
+        .fetch_one(&db)
+        .await
+        .map_err(|e| AppError::DbError(e.to_string()))?;
+        Ok(products)
+    }
+
+    // delete
+    pub async fn delete(db: DB, id: i32) -> Result<(), AppError> {
+        sqlx::query!("DELETE FROM products WHERE id=$1", id)
+            .execute(&db)
+            .await?;
         Ok(())
     }
 }
@@ -62,13 +71,8 @@ pub struct UpdateProduct {
 }
 
 impl UpdateProduct {
-
     // update
-    pub async fn update(
-    db: DB,
-    id: i32,
-    payload: &UpdateProduct,
-    ) -> Result<Product, AppError> {
+    pub async fn update(db: DB, id: i32, payload: &UpdateProduct) -> Result<Product, AppError> {
         let product = sqlx::query_as!(
             Product,
             r#"
@@ -86,4 +90,3 @@ impl UpdateProduct {
         Ok(product)
     }
 }
-

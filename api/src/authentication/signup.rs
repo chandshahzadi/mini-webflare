@@ -1,11 +1,9 @@
-use axum::{
-    extract::{State}, Json, Router, routing::post
-};
-use utils::{db::DB, error::AppError};
 use authentication::signup::{SignupInput, signup};
+use axum::{Extension, Json, Router, routing::post};
+use utils::{db::DB, error::AppError};
 
 pub async fn sign_up(
-    State(db): State<DB>,
+    Extension(db): Extension<DB>,
     Json(form): Json<SignupInput>,
 ) -> Result<Json<String>, AppError> {
     match signup(db, form).await {
@@ -14,6 +12,6 @@ pub async fn sign_up(
     }
 }
 
-pub fn router() -> Router<DB>{
+pub fn router() -> Router {
     Router::new().route("/signup", post(sign_up))
 }

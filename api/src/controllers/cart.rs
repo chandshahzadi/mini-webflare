@@ -1,8 +1,10 @@
 use axum::{
-    Json, Router, extract::{Extension, Path}, routing::{get, post}
+    Json, Router,
+    extract::{Extension, Path},
+    routing::{get, post, put},
 };
-use utils::{db::DB, error::AppError};
 use models::cart::{Cart, CreateCart, delete};
+use utils::{db::DB, error::AppError};
 
 // ➤ create/cart
 pub async fn add_to_cart(
@@ -12,15 +14,12 @@ pub async fn add_to_cart(
     payload.create(db).await
 }
 
-// ➤ get/cart
-pub async fn get_cart(
-    Path(user_id): Path<i32>,
-    Extension(db): Extension<DB>,
-) -> Result<Json<Vec<Cart>>, AppError> {
-    Cart::get(db, user_id).await.map(Json)
+// ➤ get cart
+pub async fn get_cart(Extension(db): Extension<DB>) -> Result<Json<Vec<Cart>>, AppError> {
+    Cart::get(db).await.map(Json)
 }
 
-// ➤ update/cart 
+// ➤ update carts
 pub async fn update_cart(
     Path(id): Path<i32>,
     Extension(db): Extension<DB>,
@@ -29,7 +28,7 @@ pub async fn update_cart(
     Cart::update(db, id, payload.quantity).await.map(Json)
 }
 
-// ➤ delete/cart
+// ➤ delete cart
 pub async fn delete_from_cart(
     Path(id): Path<i32>,
     Extension(db): Extension<DB>,
@@ -37,12 +36,9 @@ pub async fn delete_from_cart(
     delete(db, id).await
 }
 
-pub fn router() -> Router<DB> {    
+pub fn router() -> Router {
     Router::new()
         .route("/cart/add", post(add_to_cart))
         .route("/cart", get(get_cart))
-        .route(
-            "/cart/{id}",
-            get(get_cart).put(update_cart).delete(delete_from_cart)
-        )
+        .route("/cart/{id}", put(update_cart).delete(delete_from_cart))
 }

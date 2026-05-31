@@ -1,29 +1,32 @@
-
-use axum::Json;
-use chrono::Utc;
 use serde::Deserialize;
-use jsonwebtoken::{EncodingKey, Header, encode};
-use utils::jwt::Claims;
+use serde::Serialize;
+use sqlx::query;
+use utils::{db::DB, encryption::verify_password, enums::Role, error::AppError, jwt::create_token};
 
-#[derive(Debug, Deserialize)]
-pub struct LoginInput {
+#[derive(Serialize)]
+pub struct LoginResponse {
+    pub token: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Login {
     pub email: String,
     pub password: String,
 }
 
-impl LoginInput {
-    pub async fn login(
-        Json(_payload): Json<LoginInput>,
-    ) -> Json<String> {
-        let claims = Claims {
-            user_id: 12,
-            role: "user".to_string(),
-            exp: (Utc::now().timestamp() + 3600) as usize, 
-        };
+impl Login {
+    pub async fn login(self, db: DB) -> Result<LoginResponse, AppError> {
+        let res = query!(
+            "SELECT id, password, role FROM users WHERE email = $1",
+            self.email
+        )
+        .fetch_optional(&db)
+        .await?
+        .ok_or(AppError::DbError("User not found".to_string()))?;
+        verify_password(&res.password, &self.password);
 
-        let secret = "your_secret_key";
-        let token = encode(&Header::default(), &claims, &EncodingKey::from_secret(secret.as_ref())).unwrap();
-
-        Json(token)
+        let token =
+            create_token(res.id, Role::Admin).map_err(|e| AppError::DbError(e.to_string()))?;
+        Ok(LoginResponse { token })
     }
 }

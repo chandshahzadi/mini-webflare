@@ -1,11 +1,10 @@
 use axum::Router;
-use utils::db::DB;
-pub mod user;
-pub mod product;
 pub mod cart;
 pub mod order;
+pub mod product;
+pub mod user;
 
-pub fn router() -> Router<DB> {
+pub fn router() -> Router {
     Router::new()
         .merge(user::router())
         .merge(product::router())

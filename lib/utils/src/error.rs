@@ -1,12 +1,13 @@
 use axum::{
-    response::{IntoResponse, Response},
     http::StatusCode,
+    response::{IntoResponse, Response},
 };
 use sqlx::Error as SqlxError;
-
 #[derive(Debug)]
 pub enum AppError {
     DbError(String),
+    Unauthorized,
+    Forbidden,
 }
 
 impl From<SqlxError> for AppError {
@@ -17,10 +18,12 @@ impl From<SqlxError> for AppError {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        let message = match self {
-            AppError::DbError(msg) => msg,
+        let (status, message) = match self {
+            AppError::DbError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
+            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized".to_string()),
+            AppError::Forbidden => (StatusCode::FORBIDDEN, "Forbidden".to_string()),
         };
 
-        (StatusCode::INTERNAL_SERVER_ERROR, message).into_response()
+        (status, message).into_response()
     }
 }

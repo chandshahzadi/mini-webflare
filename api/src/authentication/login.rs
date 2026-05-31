@@ -1,16 +1,14 @@
-use axum::{
-    Json, Router, extract::{Extension, State}, routing::post
-};
+use authentication::login::{Login, LoginResponse};
+use axum::{Extension, Json, Router, routing::post};
 use utils::{db::DB, error::AppError};
-use authentication::login::LoginInput;
 
 pub async fn login(
-    State(db): State<DB>,
-    Json(form): Json<LoginInput>,
-) -> Result<Json<String>, AppError> {
-    Ok(LoginInput::login(Json(form)).await)
+    Extension(db): Extension<DB>,
+    Json(form): Json<Login>,
+) -> Result<Json<LoginResponse>, AppError> {
+    form.login(db).await.map(Json)
 }
 
-pub fn router() -> Router<DB> {
+pub fn router() -> Router {
     Router::new().route("/login", post(login))
 }

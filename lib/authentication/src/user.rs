@@ -1,52 +1,47 @@
 use axum::{
-    Json, extract::{Path, State}, http::StatusCode
+    Json, debug_handler,
+    extract::{Path, State},
+    http::StatusCode,
 };
-use axum::debug_handler;
-use utils::encryption::hash_password;
+use models::user::{CreateUser, User};
 use utils::db::DB;
-use models::user::{User, CreateUser};
+use utils::encryption::hash_password;
+use utils::error::AppError;
 
-// create/user
+// create user
 pub async fn create_user(
     State(db): State<DB>,
     Json(payload): Json<CreateUser>,
-) -> Result<Json<User>, String> {
+) -> Result<Json<User>, AppError> {
     let hashed_password = hash_password(&payload.password);
-
-    let result = sqlx::query_as::<_, User>(
-        "INSERT INTO users (first_name,last_name,email,password)
-         VALUES ($1, $2, $3, $4)
-         RETURNING id, first_name, last_name, email, password"
+    
+    let user = sqlx::query_as!(
+        User,
+        "
+        INSERT INTO users (first_name,last_name,email,password)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id, first_name, last_name, email, password
+        ",
+        payload.first_name,
+        payload.last_name,
+        payload.email,
+        hashed_password
     )
-    .bind(&payload.first_name)
-    .bind(&payload.last_name)
-    .bind(&payload.email)
-    .bind(&payload.password)
-    .bind(&hashed_password)
     .fetch_one(&db)
-    .await;
-
-    match result {
-        Ok(user) => {
-            println!("User created in DB: {:?}", user); 
-            Ok(Json(user))
-        },
-        Err(e) => {
-            eprintln!("DATABASE ERROR: {:?}", e); 
-            Err(format!("Failed to create user: {:?}", e))
-        }
-    }
+    .await?;
+    Ok(Json(user))
+    
 }
 
-// get/users
+// get users
 pub async fn get_users(State(db): State<DB>) -> Result<Json<Vec<User>>, StatusCode> {
-                eprintln!("DATABASE ERROR: {:?}", db);
-
-    let users = sqlx::query_as::<_, User>(
-        "SELECT id, first_name, last_name, email, password FROM users"
-    )
-    .fetch_all(&db)
-    .await;
+    let users =
+        sqlx::query_as!(
+            User,
+            "SELECT id, first_name, last_name, email, password FROM users"
+        )
+        .fetch_all(&db)
+        .await;
 
     match users {
         Ok(list) => Ok(Json(list)),
@@ -57,16 +52,18 @@ pub async fn get_users(State(db): State<DB>) -> Result<Json<Vec<User>>, StatusCo
     }
 }
 
-// create/user
+// create user
 pub async fn get_user(
-    State(db): State<DB>,
-    Path(id): Path<i32>,
+    State(db): State<DB>, 
+    Path(id): Path<i32>
 ) -> Result<Json<User>, String> {
-
-    let result = sqlx::query_as::<_, User>(
-        "SELECT id, first_name, last_name, email, password FROM users WHERE id = $1"
+    let result = sqlx::query_as!(
+        User,
+        "SELECT id, first_name, last_name, email, password 
+        FROM users 
+        WHERE id = $1",
+        id
     )
-    .bind(id)
     .fetch_one(&db)
     .await;
 
@@ -78,7 +75,8 @@ pub async fn get_user(
         }
     }
 }
-//update/user
+
+//update user
 #[debug_handler]
 pub async fn update_user(
     Path(id): Path<i32>,
@@ -106,19 +104,14 @@ pub async fn update_user(
     Ok(())
 }
 
-// delete/users 
+// delete users
 pub async fn delete_user(
     State(db): State<DB>,
     Path(id): Path<i32>,
 ) -> Result<&'static str, String> {
-
-    let result = sqlx::query!(
-        "DELETE FROM users WHERE id = $1",
-        id
-        
-    )
-    .execute(&db)
-    .await;
+    let result = sqlx::query!("DELETE FROM users WHERE id = $1", id)
+        .execute(&db)
+        .await;
 
     match result {
         Ok(_) => Ok("User deleted successfully"),

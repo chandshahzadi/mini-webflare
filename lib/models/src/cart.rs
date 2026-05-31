@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use utils::{db::DB, error::AppError};
 
@@ -10,12 +10,8 @@ pub struct CreateCart {
 }
 
 impl CreateCart {
-    
     // create/cart
-    pub async fn create(
-        self,
-        db: DB, 
-    ) -> Result<(), AppError> {
+    pub async fn create(self, db: DB) -> Result<(), AppError> {
         sqlx::query_as!(
             Cart,
             r#"
@@ -42,33 +38,17 @@ pub struct Cart {
 }
 
 impl Cart {
-    
     // get/cart
-    pub async fn get(
-        db: DB, 
-        user_id: i32,
-    ) -> Result<Vec<Cart>, AppError> {
-        let carts = sqlx::query_as!(
-            Cart,
-            r#"
-            SELECT id, user_id, product_id, quantity
-            FROM carts
-            WHERE user_id = $1
-            "#,
-            user_id
-        )
-        .fetch_all(&db)
-        .await?;
-        println!("get cart: {:?}", carts);
+    pub async fn get(db: DB) -> Result<Vec<Cart>, AppError> {
+        let carts = sqlx::query_as!(Cart, "SELECT id, user_id, product_id, quantity FROM carts")
+            .fetch_all(&db)
+            .await
+            .map_err(|e| AppError::DbError(e.to_string()))?;
         Ok(carts)
     }
 
-      // update/cart
-    pub async fn update(
-        db: DB, 
-        id: i32, 
-        quantity: i32,
-    ) -> Result<Cart, AppError> {
+    // update/cart
+    pub async fn update(db: DB, id: i32, quantity: i32) -> Result<Cart, AppError> {
         let cart = sqlx::query_as!(
             Cart,
             r#"
@@ -88,19 +68,9 @@ impl Cart {
 }
 
 // delete/cart
-pub async fn delete(
-    db: DB, 
-    cart_id: i32,
-) -> Result<(), AppError> {
-    sqlx::query!(
-        "DELETE FROM carts WHERE id = $1",
-        cart_id
-    )
-    .execute(&db)
-    .await?;
+pub async fn delete(db: DB, cart_id: i32) -> Result<(), AppError> {
+    sqlx::query!("DELETE FROM carts WHERE id = $1", cart_id)
+        .execute(&db)
+        .await?;
     Ok(())
 }
-
-
-
-

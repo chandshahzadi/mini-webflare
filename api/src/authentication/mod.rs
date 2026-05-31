@@ -1,10 +1,7 @@
 use axum::Router;
-use utils::db::DB;
-pub mod signup;
 pub mod login;
+pub mod signup;
 
-pub fn router() -> Router<DB> {
-    Router::new()
-        .merge(login::router())
-        .merge(signup::router())
+pub fn router() -> Router {
+    Router::new().merge(login::router()).merge(signup::router())
 }

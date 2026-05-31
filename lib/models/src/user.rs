@@ -1,5 +1,5 @@
 use axum::{Json, extract::Path};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use utils::{db::DB, error::AppError};
 
@@ -12,10 +12,7 @@ pub struct CreateUser {
 }
 
 impl CreateUser {
-    pub async fn create(
-        db: DB,
-        payload: &CreateUser,
-    )-> Result<(), AppError> {
+    pub async fn create(db: DB, payload: &CreateUser) -> Result<(), AppError> {
         sqlx::query_as!(
             User,
             "INSERT INTO users (first_name, last_name, email, password)
@@ -32,7 +29,7 @@ impl CreateUser {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, FromRow)] 
+#[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct User {
     pub id: i32,
     pub first_name: String,
@@ -41,12 +38,9 @@ pub struct User {
     pub password: String,
 }
 
-impl  User {
+impl User {
     //find user by id
-    pub async fn find_by_id(
-        db: DB,
-        id: i32,
-    ) -> Result<Json<User>, AppError> {
+    pub async fn find_by_id(db: DB, id: i32) -> Result<Json<User>, AppError> {
         let users = sqlx::query_as::<_, User>(
             "SELECT id, first_name, last_name, email, password FROM users WHERE id = $1",
         )
@@ -57,22 +51,16 @@ impl  User {
     }
 
     // find all users
-      pub async fn find(
-        db: DB,
-    ) -> Result<Vec<User>, AppError> {
+    pub async fn find(db: DB) -> Result<Vec<User>, AppError> {
         let users = sqlx::query_as::<_, User>(
-            "SELECT id, first_name, last_name, email, password FROM users"
+            "SELECT id, first_name, last_name, email, password FROM users",
         )
         .fetch_all(&db)
         .await?;
         Ok(users)
     }
 
-    pub async fn update(
-    db: DB,
-    id: i32,
-    payload: &CreateUser,
-    ) -> Result<User, AppError> {
+    pub async fn update(db: DB, id: i32, payload: &CreateUser) -> Result<User, AppError> {
         let p = sqlx::query_as!(
             User,
             r#"
@@ -96,20 +84,16 @@ impl  User {
     }
 
     // delete user
-  pub async fn delete(
-    db: DB,
-    id: i32,
-) -> Result<Option<User>, AppError> {
-    let user = sqlx::query_as::<_, User>(
-        "DELETE FROM users
-         WHERE id = $1
-         RETURNING id, first_name, last_name, email, password"
-    )
-    .bind(id)
-    .fetch_optional(&db)
-    .await?;
-    Ok(user)
+    pub async fn delete(db: DB, id: i32) -> Result<(), AppError> {
+        sqlx::query!(
+            "
+            DELETE FROM users
+            WHERE id = $1
+            ",
+            id
+        )
+        .execute(&db)
+        .await?;
+        Ok(())
+    }
 }
-}
-
-
