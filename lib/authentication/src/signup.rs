@@ -1,34 +1,33 @@
 use serde::Deserialize;
+use sqlx::query;
 use utils::db::DB;
-use utils::jwt::create_token;
 use utils::{encryption::hash_password, error::AppError};
 
 #[derive(Deserialize)]
-pub struct SignupInput {
+pub struct Signup {
     pub first_name: String,
     pub last_name: String,
     pub email: String,
     pub password: String,
 }
 
-pub async fn signup(db: DB, payload: SignupInput) -> Result<String, AppError> {
-    let hashed = hash_password(&payload.password);
+impl Signup {
+    pub async fn signup(self, db: DB) -> Result<(), AppError> {
+        let hashed = hash_password(&self.password);
 
-    let user = sqlx::query!(
-        r#"
-        INSERT INTO users (first_name, last_name, email, password, role)
-        VALUES ($1, $2, $3, $4, 'user')
-        RETURNING id
-        "#,
-        payload.first_name,
-        payload.last_name,
-        payload.email,
-        hashed
-    )
-    .fetch_one(&db)
-    .await?;
+        query!(
+            r#"
+            INSERT INTO users (first_name, last_name, email, password, role)
+            VALUES ($1, $2, $3, $4, 'admin')
+            "#,
+            self.first_name,
+            self.last_name,
+            self.email,
+            hashed,
+        )
+        .execute(&db)
+        .await?;
 
-    let token = create_token(user.id, utils::enums::Role::Admin)
-        .map_err(|e| AppError::DbError(e.to_string()))?;
-    Ok(token)
+        Ok(())
+    }
 }

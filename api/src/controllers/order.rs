@@ -14,6 +14,14 @@ pub async fn create_order(
     CreateOrder::create(db, payload).await
 }
 
+//
+// pub async fn add_items_to_order(
+//     Extension(db): Extension<DB>,
+//     Json(form): Json<CreatOrderItem>,
+// ) -> Result<(), AppError> {
+//     form.craete_order_item(db).await
+// }
+
 // ➤ get order
 pub async fn get_order(
     Path(user_id): Path<i32>,
@@ -46,6 +54,7 @@ pub async fn delete_order(
 pub fn router() -> Router {
     Router::new()
         .route("/orders", get(get_orders).post(create_order))
+        // .route("/order/add", post(add_items_to_order))
         .route(
             "/orders/{id}",
             get(get_order).put(update_order).delete(delete_order),

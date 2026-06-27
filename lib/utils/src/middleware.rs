@@ -49,7 +49,7 @@ pub async fn verify_role(
         .get::<AuthUser>()
         .ok_or(AppError::Unauthorized)?;
 
-    if path.starts_with("/admin") && user.role != Role::Admin {
+    if path.starts_with("/user") && user.role != Role::User {
         return Err(AppError::Unauthorized);
     }
 

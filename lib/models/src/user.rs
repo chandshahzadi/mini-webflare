@@ -1,4 +1,4 @@
-use axum::{Json, extract::Path};
+use axum::Json;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use utils::{db::DB, error::AppError};

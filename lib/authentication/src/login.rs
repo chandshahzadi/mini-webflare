@@ -26,7 +26,7 @@ impl Login {
         verify_password(&res.password, &self.password);
 
         let token =
-            create_token(res.id, Role::Admin).map_err(|e| AppError::DbError(e.to_string()))?;
+            create_token(res.id, Role::User).map_err(|e| AppError::DbError(e.to_string()))?;
         Ok(LoginResponse { token })
     }
 }

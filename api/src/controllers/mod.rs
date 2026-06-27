@@ -1,5 +1,6 @@
 use axum::Router;
 pub mod cart;
+pub mod checkout_service;
 pub mod order;
 pub mod product;
 pub mod user;
@@ -10,4 +11,5 @@ pub fn router() -> Router {
         .merge(product::router())
         .merge(cart::router())
         .merge(order::router())
+        .merge(checkout_service::router())
 }

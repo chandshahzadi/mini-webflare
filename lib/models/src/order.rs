@@ -1,7 +1,10 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use utils::{db::DB, error::AppError};
+use utils::{
+    db::{self, DB},
+    error::AppError,
+};
 
 #[derive(Debug, Deserialize)]
 pub struct CreateOrder {
@@ -10,7 +13,7 @@ pub struct CreateOrder {
 }
 
 impl CreateOrder {
-    // create/order
+    // create order
     pub async fn create(db: DB, payload: CreateOrder) -> Result<(), AppError> {
         sqlx::query_as!(
             Order,
@@ -37,7 +40,7 @@ pub struct Order {
 }
 
 impl Order {
-    // get order
+    // find orders by id
     pub async fn get(db: DB, user_id: i32) -> Result<Vec<Order>, AppError> {
         let orders = sqlx::query_as!(
             Order,

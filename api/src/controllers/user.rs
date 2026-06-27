@@ -1,8 +1,6 @@
-use crate::authentication;
-use crate::controllers;
 use axum::{
     Extension, Json, Router,
-    extract::{Path, State},
+    extract::Path,
     routing::{get, post, put},
 };
 use models::user::{CreateUser, User};
