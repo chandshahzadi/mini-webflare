@@ -43,3 +43,8 @@ CREATE TABLE order_items (
     product_id INT NOT NULL REFERENCES products(id),
     quantity INT NOT NULL,
 );
+
+CREATE TYPE payment_method AS ENUM (
+    'Online'
+    'CashOnDelivery',
+);

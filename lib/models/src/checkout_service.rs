@@ -1,10 +1,18 @@
 use serde::{Deserialize, Serialize};
+use sqlx::Type;
 use utils::{db::DB, error::AppError};
+
+#[derive(Debug, Serialize, Deserialize, Type)]
+#[sqlx(type_name = "payment_method")]
+pub enum PaymentMethod {
+    Online,
+    CashOnDelivery,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CheckoutRequest {
     pub shipping_method: String,
-    pub payment_method: String,
+    pub payment_method: PaymentMethod,
     pub contact_number: String,
 }
 
@@ -55,7 +63,12 @@ impl CheckoutRequest {
             .total_price
             .ok_or_else(|| AppError::BadRequest("Failed to calculate total".into()))?;
 
-        // // create order
+        // create order
+        let payment_method = match self.payment_method {
+            PaymentMethod::Online => "Online",
+            PaymentMethod::CashOnDelivery => "CashOnDelivery",
+        };
+
         let order = sqlx::query!(
             r#"
                 INSERT INTO orders (user_id, total_price, shipping_method, payment_method, contact_number)
@@ -64,8 +77,8 @@ impl CheckoutRequest {
             "#,
             user_id,
             total_price,
+            payment_method,
             self.shipping_method,
-            self.payment_method,
             self.contact_number
         )
         .fetch_one(&db)
