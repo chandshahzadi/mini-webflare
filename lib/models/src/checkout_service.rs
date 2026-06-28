@@ -18,7 +18,9 @@ pub struct CheckoutRequest {
 
 impl CheckoutRequest {
     pub async fn checkout(self, db: DB, user_id: i32) -> Result<i32, AppError> {
-        println!("user_id: {:?}", user_id);
+        let mut tx = db.begin().await?;
+
+        println!("user_id: {:?}", tx);
 
         // get cart items
         let cart_items = sqlx::query!(
@@ -36,7 +38,7 @@ impl CheckoutRequest {
             "#,
             user_id
         )
-        .fetch_all(&db)
+        .fetch_all(&mut *tx)
         .await?;
         println!("cart_items: {:#?}", cart_items);
         if cart_items.is_empty() {
@@ -56,7 +58,7 @@ impl CheckoutRequest {
             "#,
             user_id
         )
-        .fetch_one(&db)
+        .fetch_one(&mut *tx)
         .await?;
 
         let total_price = total
@@ -81,7 +83,7 @@ impl CheckoutRequest {
             self.shipping_method,
             self.contact_number
         )
-        .fetch_one(&db)
+        .fetch_one(&mut *tx)
         .await?;
         println!("order result = {:?}", order);
         let order_id = order.id;
@@ -98,7 +100,7 @@ impl CheckoutRequest {
                 item.product_id,
                 item.quantity,
             )
-            .execute(&db)
+            .execute(&mut *tx)
             .await?;
             println!("item = {:?}", item);
         }
@@ -115,10 +117,12 @@ impl CheckoutRequest {
             "#,
             user_id
         )
-        .execute(&db)
+        .execute(&mut *tx)
         .await;
         println!("delete = {:?}", delete);
+
         // return order id
+        tx.commit().await?;
         Ok(order.id)
     }
 }
