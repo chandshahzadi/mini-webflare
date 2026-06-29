@@ -41,10 +41,15 @@ CREATE TABLE order_items (
     id SERIAL PRIMARY KEY,
     order_id INT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
     product_id INT NOT NULL REFERENCES products(id),
-    quantity INT NOT NULL,
+    quantity INT NOT NULL
 );
 
 CREATE TYPE payment_method AS ENUM (
     'Online'
-    'CashOnDelivery',
+    'CashOnDelivery'
+);
+
+CREATE TYPE ShippingMethod AS ENUM (
+    'HomeDelivery',
+    'Pickup'
 );

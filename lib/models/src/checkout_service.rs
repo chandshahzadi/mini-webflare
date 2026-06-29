@@ -9,9 +9,16 @@ pub enum PaymentMethod {
     CashOnDelivery,
 }
 
+#[derive(Debug, Serialize, Deserialize, Type)]
+#[sqlx(type_name = "payment_method")]
+pub enum ShippingMethod {
+    HomeDelivery,
+    Pickup,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CheckoutRequest {
-    pub shipping_method: String,
+    pub shipping_method: ShippingMethod,
     pub payment_method: PaymentMethod,
     pub contact_number: String,
 }
@@ -71,6 +78,11 @@ impl CheckoutRequest {
             PaymentMethod::CashOnDelivery => "CashOnDelivery",
         };
 
+        let shipping_method = match self.shipping_method {
+            ShippingMethod::HomeDelivery => "Online",
+            ShippingMethod::Pickup => "CashOnDelivery",
+        };
+
         let order = sqlx::query!(
             r#"
                 INSERT INTO orders (user_id, total_price, shipping_method, payment_method, contact_number)
@@ -79,8 +91,8 @@ impl CheckoutRequest {
             "#,
             user_id,
             total_price,
+            shipping_method,
             payment_method,
-            self.shipping_method,
             self.contact_number
         )
         .fetch_one(&mut *tx)
