@@ -26,6 +26,15 @@ CREATE TABLE cart_items (
     quantity INT NOT NULL
 );
 
+CREATE TYPE OrderStatus AS ENUM (
+    'Pending',
+    'Confirmed',
+    'Packed',
+    'Shipped',
+    'Delivered',
+    'Cancelled'
+);
+
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
@@ -33,7 +42,7 @@ CREATE TABLE orders (
     shipping_method VARCHAR(50),
     payment_method VARCHAR(50),
     contact_number VARCHAR(20),
-    order_status VARCHAR(20) DEFAULT 'pending',
+    order_status OrderStatus NOT NULL DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -1,6 +1,7 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
+use sqlx::Type;
 use utils::{
     db::{self, DB},
     error::AppError,
@@ -18,12 +19,17 @@ impl CreateOrder {
         sqlx::query_as!(
             Order,
             r#"
-        INSERT INTO orders (user_id, total_price)
-        VALUES ($1, $2)
-        RETURNING id, user_id, total_price, created_at
-        "#,
+            INSERT INTO orders (user_id, total_price)
+            VALUES ($1, $2)
+            RETURNING
+                id,
+                user_id,
+                total_price,
+                order_status as "order_status: OrderStatus",
+                created_at
+            "#,
             payload.user_id,
-            payload.total_price
+            payload.total_price,
         )
         .fetch_one(&db)
         .await?;
@@ -31,11 +37,23 @@ impl CreateOrder {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize, Type)]
+#[sqlx(type_name = "order_status", rename_all = "PascalCase")]
+pub enum OrderStatus {
+    Pending,
+    Confirmed,
+    Packed,
+    Shipped,
+    Delivered,
+    Cancelled,
+}
+
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Order {
     pub id: i32,
     pub user_id: i32,
     pub total_price: f64,
+    pub order_status: OrderStatus,
     pub created_at: Option<NaiveDateTime>,
 }
 
@@ -45,11 +63,11 @@ impl Order {
         let orders = sqlx::query_as!(
             Order,
             r#"
-            SELECT id, user_id, total_price, created_at
+            SELECT id, user_id, total_price, order_status as "order_status: OrderStatus", created_at
             FROM orders
             WHERE user_id = $1
             "#,
-            user_id
+            user_id,
         )
         .fetch_all(&db)
         .await?;
@@ -58,13 +76,22 @@ impl Order {
     }
     // find all orders
     pub async fn find(db: DB) -> Result<Vec<Order>, AppError> {
-        let orders =
-            sqlx::query_as::<_, Order>("SELECT id, user_id, total_price, created_at FROM orders")
-                .fetch_all(&db)
-                .await?;
+        let orders = sqlx::query_as!(
+            Order,
+            r#"
+            SELECT
+                id,
+                user_id,
+                total_price,
+                order_status as "order_status: OrderStatus",
+                created_at
+            FROM orders
+            "#
+        )
+        .fetch_all(&db)
+        .await?;
         Ok(orders)
     }
-
     // delete order
     pub async fn delete(db: DB, id: i32) -> Result<(), AppError> {
         sqlx::query!("DELETE FROM orders WHERE id = $1", id)
@@ -88,13 +115,14 @@ impl UpdateOrder {
             UPDATE orders
             SET total_price = $1
             WHERE id = $2
-            RETURNING id, user_id, total_price, created_at
+            RETURNING id, user_id, total_price, order_status as "order_status: OrderStatus", created_at
             "#,
             self.total_price,
             id
         )
         .fetch_one(&db)
         .await?;
+        println!("Updated status: {:?}", order.order_status);
         Ok(order)
     }
 }

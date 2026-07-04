@@ -118,20 +118,20 @@ impl CheckoutRequest {
         }
 
         // clear cart
-        let delete = sqlx::query!(
-            r#"
-            DELETE FROM cart_items
-            WHERE cart_id IN (
-                SELECT id
-                FROM carts
-                WHERE user_id = $1
-            )
-            "#,
-            user_id
-        )
-        .execute(&mut *tx)
-        .await;
-        println!("delete = {:?}", delete);
+        // let delete = sqlx::query!(
+        //     r#"
+        //     DELETE FROM cart_items
+        //     WHERE cart_id IN (
+        //         SELECT id
+        //         FROM carts
+        //         WHERE user_id = $1
+        //     )
+        //     "#,
+        //     user_id
+        // )
+        // .execute(&mut *tx)
+        // .await;
+        // println!("delete = {:?}", delete);
 
         // return order id
         tx.commit().await?;

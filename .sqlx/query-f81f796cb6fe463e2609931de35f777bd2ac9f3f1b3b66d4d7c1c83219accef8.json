@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT id, user_id, total_price, created_at\n            FROM orders\n            WHERE user_id = $1\n            ",
+  "query": "\n            UPDATE cart_items\n            SET quantity = $1\n            WHERE id = $2\n            RETURNING id, cart_id, product_id, quantity\n            ",
   "describe": {
     "columns": [
       {
@@ -10,22 +10,23 @@
       },
       {
         "ordinal": 1,
-        "name": "user_id",
+        "name": "cart_id",
         "type_info": "Int4"
       },
       {
         "ordinal": 2,
-        "name": "total_price",
-        "type_info": "Float8"
+        "name": "product_id",
+        "type_info": "Int4"
       },
       {
         "ordinal": 3,
-        "name": "created_at",
-        "type_info": "Timestamp"
+        "name": "quantity",
+        "type_info": "Int4"
       }
     ],
     "parameters": {
       "Left": [
+        "Int4",
         "Int4"
       ]
     },
@@ -33,8 +34,8 @@
       false,
       false,
       false,
-      true
+      false
     ]
   },
-  "hash": "78c1c94e75f5d3bf1d05e82365cc2ff75f0f8872dfb9ce22385e412fbe3f071a"
+  "hash": "f81f796cb6fe463e2609931de35f777bd2ac9f3f1b3b66d4d7c1c83219accef8"
 }
