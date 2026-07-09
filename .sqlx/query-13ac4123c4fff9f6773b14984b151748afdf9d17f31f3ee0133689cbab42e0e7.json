@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT SUM(ci.quantity * p.price) AS total_price\n            FROM cart_items ci\n            JOIN products p\n                ON p.id = ci.product_id\n            JOIN carts c\n                ON c.id = ci.cart_id\n            WHERE c.user_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "total_price",
+        "type_info": "Float8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "13ac4123c4fff9f6773b14984b151748afdf9d17f31f3ee0133689cbab42e0e7"
+}
