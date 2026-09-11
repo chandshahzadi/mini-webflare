@@ -27,7 +27,6 @@ impl CheckoutRequest {
     pub async fn checkout(self, db: DB, user_id: i32) -> Result<i32, AppError> {
         let mut tx = db.begin().await?;
 
-
         // get cart items
         let cart_items = sqlx::query!(
             r#"

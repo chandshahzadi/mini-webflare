@@ -1,8 +1,4 @@
-use axum::{
-    Extension, Json, Router,
-    extract::Path,
-    routing::get,
-};
+use axum::{Extension, Json, Router, extract::Path, routing::get};
 use models::product::{Product, UpdateProduct};
 use utils::{db::DB, error::AppError};
 
