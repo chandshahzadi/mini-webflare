@@ -17,8 +17,8 @@ impl Signup {
 
         query!(
             r#"
-            INSERT INTO users (first_name, last_name, email, password, role)
-            VALUES ($1, $2, $3, $4, 'admin')
+            INSERT INTO users (first_name, last_name, email, password)
+            VALUES ($1, $2, $3, $4)
             "#,
             self.first_name,
             self.last_name,

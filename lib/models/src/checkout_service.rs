@@ -27,7 +27,6 @@ impl CheckoutRequest {
     pub async fn checkout(self, db: DB, user_id: i32) -> Result<i32, AppError> {
         let mut tx = db.begin().await?;
 
-        println!("user_id: {:?}", tx);
 
         // get cart items
         let cart_items = sqlx::query!(
@@ -79,8 +78,8 @@ impl CheckoutRequest {
         };
 
         let shipping_method = match self.shipping_method {
-            ShippingMethod::HomeDelivery => "Online",
-            ShippingMethod::Pickup => "CashOnDelivery",
+            ShippingMethod::HomeDelivery => "HomeDelivery",
+            ShippingMethod::Pickup => "Pickup",
         };
 
         let order = sqlx::query!(
@@ -105,7 +104,7 @@ impl CheckoutRequest {
             sqlx::query!(
                 r#"
                 INSERT INTO order_items
-                (order_id, product_id, quantity)
+               (order_id, product_id, quantity)
                 VALUES ($1, $2, $3)
                 "#,
                 order_id,
@@ -118,20 +117,20 @@ impl CheckoutRequest {
         }
 
         // clear cart
-        // let delete = sqlx::query!(
-        //     r#"
-        //     DELETE FROM cart_items
-        //     WHERE cart_id IN (
-        //         SELECT id
-        //         FROM carts
-        //         WHERE user_id = $1
-        //     )
-        //     "#,
-        //     user_id
-        // )
-        // .execute(&mut *tx)
-        // .await;
-        // println!("delete = {:?}", delete);
+        let delete = sqlx::query!(
+            r#"
+            DELETE FROM cart_items
+            WHERE cart_id IN (
+                SELECT id
+                FROM carts
+                WHERE user_id = $1
+            )
+            "#,
+            user_id
+        )
+        .execute(&mut *tx)
+        .await?;
+        println!("delete = {:?}", delete);
 
         // return order id
         tx.commit().await?;

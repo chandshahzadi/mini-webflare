@@ -1,9 +1,18 @@
 [workspace]
 resolver = "2"
+
 members = [
     "lib/authentication",
     "lib/models",
     "lib/utils",
-    "api"
+    "api",
+    "lambda"
 ]
 
+
+[workspace.dependencies]
+axum = "0.8"
+tower = "0.5"
+lambda_http = "0.15.1"
+lambda_runtime = "0.14"
+tokio = { version = "1", features = ["full"] }

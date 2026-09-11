@@ -14,4 +14,4 @@ RUN cargo build --release
 
 EXPOSE 3000
 
-CMD ["./target/release/api"]
+CMD ["./target/release/lambda"]

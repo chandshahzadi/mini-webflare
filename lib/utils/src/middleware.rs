@@ -1,8 +1,4 @@
-use axum::{
-    extract::{OriginalUri, Request},
-    middleware::Next,
-    response::Response,
-};
+use axum::{extract::Request, middleware::Next, response::Response};
 
 use crate::{enums::Role, error::AppError, jwt::verify_jwt};
 
@@ -37,21 +33,13 @@ pub async fn verify_token(mut req: Request, next: Next) -> Result<Response, AppE
     Ok(next.run(req).await)
 }
 
-pub async fn verify_role(
-    OriginalUri(uri): OriginalUri,
-    req: Request,
-    next: Next,
-) -> Result<Response, AppError> {
-    let path = uri.path();
-
+pub async fn is_admin(req: Request, next: Next) -> Result<Response, AppError> {
     let user = req
         .extensions()
         .get::<AuthUser>()
         .ok_or(AppError::Unauthorized)?;
-
-    if path.starts_with("/user") && user.role != Role::User {
-        return Err(AppError::Unauthorized);
+    if user.role != Role::Admin {
+        return Err(AppError::Forbidden);
     }
-
     Ok(next.run(req).await)
 }

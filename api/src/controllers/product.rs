@@ -1,7 +1,7 @@
 use axum::{
     Extension, Json, Router,
     extract::Path,
-    routing::{get, post},
+    routing::get,
 };
 use models::product::{Product, UpdateProduct};
 use utils::{db::DB, error::AppError};

@@ -1,24 +1,22 @@
-use std::env;
+use std::net::SocketAddr;
 use tokio::net::TcpListener;
-use utils::db::DB;
-mod authentication;
-mod controllers;
-pub mod routes;
-use axum::Extension;
+
+use api::create_app;
+use utils::db::connect_db;
 
 #[tokio::main]
 async fn main() {
-    dotenvy::dotenv().ok(); // loading configuration value like, .env
+    dotenvy::dotenv().ok();
 
-    let db_url = env::var("DATABASE_URL").expect("DATABASE_URL not found");
+    let db = connect_db().await;
 
-    let db = DB::connect(&db_url)
-        .await
-        .expect("Failed to connect to database");
+    let app = create_app(db);
 
-    let app = routes::router().layer(Extension(db));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
 
-    let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    println!("Server running on {}", addr);
+
+    let listener = TcpListener::bind(addr).await.unwrap();
 
     axum::serve(listener, app).await.unwrap();
 }

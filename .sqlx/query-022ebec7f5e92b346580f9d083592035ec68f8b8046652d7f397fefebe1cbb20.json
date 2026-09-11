@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            INSERT INTO carts (user_id)\n            VALUES ($1)\n            RETURNING id, user_id\n            ",
+  "query": "\n            INSERT INTO carts (user_id)\n            VALUES ($1)\n            ON CONFLICT (user_id) DO UPDATE\n                SET user_id = EXCLUDED.user_id\n            RETURNING id, user_id\n            ",
   "describe": {
     "columns": [
       {
@@ -24,5 +24,5 @@
       false
     ]
   },
-  "hash": "a573e8fa72309e2628f126bc4e41947249ba239f84ee0332b17eba7be48475ee"
+  "hash": "022ebec7f5e92b346580f9d083592035ec68f8b8046652d7f397fefebe1cbb20"
 }

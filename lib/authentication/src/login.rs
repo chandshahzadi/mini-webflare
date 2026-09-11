@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx::query;
+use std::str::FromStr;
 use utils::{db::DB, encryption::verify_password, enums::Role, error::AppError, jwt::create_token};
 
 #[derive(Serialize)]
@@ -22,11 +23,15 @@ impl Login {
         )
         .fetch_optional(&db)
         .await?
-        .ok_or(AppError::DbError("User not found".to_string()))?;
-        verify_password(&res.password, &self.password);
+        .ok_or(AppError::Unauthorized)?;
+        if !verify_password(&self.password, &res.password) {
+            return Err(AppError::Unauthorized);
+        }
 
-        let token =
-            create_token(res.id, Role::User).map_err(|e| AppError::DbError(e.to_string()))?;
+        let role = Role::from_str(&res.role)?;
+        let token = create_token(res.id, role).map_err(|e| AppError::DbError(e.to_string()))?;
+        // let token =
+        //     create_token(res.id, Role::User).map_err(|e| AppError::DbError(e.to_string()))?;
         Ok(LoginResponse { token })
     }
 }

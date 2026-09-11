@@ -9,14 +9,13 @@ use utils::{
 
 #[derive(Debug, Deserialize)]
 pub struct CreateOrder {
-    pub user_id: i32,
     pub total_price: f64,
 }
 
 impl CreateOrder {
-    // create order
-    pub async fn create(db: DB, payload: CreateOrder) -> Result<(), AppError> {
-        sqlx::query_as!(
+    // create order for the login user
+    pub async fn create(self, db: DB, user_id: i32) -> Result<Order, AppError> {
+        let order = sqlx::query_as!(
             Order,
             r#"
             INSERT INTO orders (user_id, total_price)
@@ -25,19 +24,19 @@ impl CreateOrder {
                 id,
                 user_id,
                 total_price,
-                order_status as "order_status: OrderStatus",
+                status as "status: OrderStatus",
                 created_at
             "#,
-            payload.user_id,
-            payload.total_price,
+            user_id,
+            self.total_price,
         )
         .fetch_one(&db)
         .await?;
-        Ok(())
+        Ok(order)
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, Type)]
 #[sqlx(type_name = "order_status", rename_all = "PascalCase")]
 pub enum OrderStatus {
     Pending,
@@ -53,19 +52,21 @@ pub struct Order {
     pub id: i32,
     pub user_id: i32,
     pub total_price: f64,
-    pub order_status: OrderStatus,
+    pub status: OrderStatus,
     pub created_at: Option<NaiveDateTime>,
 }
 
 impl Order {
-    // find orders by id
-    pub async fn get(db: DB, user_id: i32) -> Result<Vec<Order>, AppError> {
+    // find orders belonging to a user
+    pub async fn find_by_user_id(db: DB, user_id: i32) -> Result<Vec<Order>, AppError> {
         let orders = sqlx::query_as!(
             Order,
             r#"
-            SELECT id, user_id, total_price, order_status as "order_status: OrderStatus", created_at
+            SELECT id, user_id, total_price,
+            status as "status: OrderStatus", created_at
             FROM orders
             WHERE user_id = $1
+            ORDER BY created_at DESC
             "#,
             user_id,
         )
@@ -74,7 +75,7 @@ impl Order {
 
         Ok(orders)
     }
-    // find all orders
+    // find all orders admin
     pub async fn find(db: DB) -> Result<Vec<Order>, AppError> {
         let orders = sqlx::query_as!(
             Order,
@@ -83,9 +84,10 @@ impl Order {
                 id,
                 user_id,
                 total_price,
-                order_status as "order_status: OrderStatus",
+                status as "status: OrderStatus",
                 created_at
             FROM orders
+            ORDER BY created_at DESC
             "#
         )
         .fetch_all(&db)
@@ -103,26 +105,27 @@ impl Order {
 
 #[derive(Debug, Deserialize)]
 pub struct UpdateOrder {
-    pub total_price: f64,
+    pub total_price: Option<f64>,
+    pub status: Option<OrderStatus>,
 }
 
 impl UpdateOrder {
-    // update/order
     pub async fn update(self, db: DB, id: i32) -> Result<Order, AppError> {
         let order = sqlx::query_as!(
             Order,
             r#"
             UPDATE orders
-            SET total_price = $1
-            WHERE id = $2
-            RETURNING id, user_id, total_price, order_status as "order_status: OrderStatus", created_at
+            SET total_price = COALESCE($1, total_price),
+                status = COALESCE($2, status)
+            WHERE id = $3
+            RETURNING id, user_id, total_price, status as "status: OrderStatus", created_at
             "#,
             self.total_price,
+            self.status as Option<OrderStatus>,
             id
         )
         .fetch_one(&db)
         .await?;
-        println!("Updated status: {:?}", order.order_status);
         Ok(order)
     }
 }
