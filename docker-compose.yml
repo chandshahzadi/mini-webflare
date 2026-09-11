@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: mini-store-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mini_store
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    image: mini-webflare:latest
+    container_name: mini-webflare-api
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/mini_store
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:

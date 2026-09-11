@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO carts (user_id)\n            VALUES ($1)\n            ON CONFLICT (user_id) DO UPDATE\n                SET user_id = EXCLUDED.user_id\n            RETURNING id, user_id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "022ebec7f5e92b346580f9d083592035ec68f8b8046652d7f397fefebe1cbb20"
+}

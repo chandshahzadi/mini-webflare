@@ -1,0 +1,20 @@
+[package]
+name = "lambda"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+api = { path = "../api" }
+
+authentication = { path = "../lib/authentication" }
+models = { path = "../lib/models" }
+utils = { path = "../lib/utils" }
+
+axum = { workspace = true }
+tower = { workspace = true }
+tokio = { workspace = true }
+lambda_http = "1.3"
+anyhow = "1"
+dotenvy = "0.15"
+axum-aws-lambda = "0.11"
+http-body-util = "0.1"

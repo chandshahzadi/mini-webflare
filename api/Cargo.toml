@@ -1,0 +1,18 @@
+[package]
+name = "api"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+authentication = { path = "../lib/authentication" }
+utils = { path = "../lib/utils" }
+models = { path = "../lib/models" }
+sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio", "macros", "chrono"] }
+axum = { version = "0.8.6", features = ["macros"] }
+serde = { version = "1.0", features = ["derive"] }
+chrono = { version = "0.4", features = ["serde"] }
+tokio = { version = "1", features = ["full"] }
+jsonwebtoken = "9"
+actix-web = "4"
+anyhow = "1"
+dotenvy = "0.15.7"

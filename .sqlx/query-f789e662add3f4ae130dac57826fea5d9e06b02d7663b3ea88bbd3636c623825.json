@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO orders (user_id, total_price, shipping_method, payment_method, contact_number)\n                VALUES ($1, $2,  $3,  $4,  $5)\n                RETURNING id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Float8",
+        "Varchar",
+        "Varchar",
+        "Varchar"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "f789e662add3f4ae130dac57826fea5d9e06b02d7663b3ea88bbd3636c623825"
+}

@@ -1,0 +1,11 @@
+[package]
+name = "models"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+utils = { path = "../utils" }
+serde = { version = "1.0", features = ["derive"] }
+axum = { version = "0.8.6", features = ["macros"] }
+sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio", "macros", "chrono"] }
+chrono = { version = "0.4", features = ["serde"] }
